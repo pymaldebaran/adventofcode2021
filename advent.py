@@ -131,6 +131,12 @@ def day1_bis(all_depth: List[int]) -> int:
     return day1(sum_depth)
 
 
+@dataclass
+class Position:
+    h: int
+    d: int
+
+
 class UnknownCommand(Exception):
     def __init__(self, command: str):
         self.command = command
@@ -138,26 +144,38 @@ class UnknownCommand(Exception):
 
 
 @dataclass
-class Command:
+class CommandV1:
     delta_h: int
     delta_d: int
 
-    def __init__(self, com: str, val: int):
-        match com:
+    def __init__(self, raw_command: str):
+        label, val = raw_command.split()
+        match label:
             case "forward":
-                self.delta_h = val
+                self.delta_h = int(val)
                 self.delta_d = 0
             case "down":
                 self.delta_h = 0
-                self.delta_d = val
+                self.delta_d = int(val)
             case "up":
                 self.delta_h = 0
-                self.delta_d = -val
+                self.delta_d = -int(val)
             case _:
                 raise UnknownCommand(com)
 
 
-def day2(commands: List[Command]) -> (int, int):
+@dataclass
+class CommandV2:
+    label: str
+    val: int
+
+    def __init__(self, raw_command: str):
+        label, val = raw_command.split()
+        self.label = label
+        self.val = int(val)
+
+
+def day2(commands: List[CommandV1]) -> (int, int):
     """
     --- Day 2: Dive! ---
 
@@ -202,7 +220,61 @@ def day2(commands: List[Command]) -> (int, int):
     """
     delta_h = [com.delta_h for com in commands]
     delta_d = [com.delta_d for com in commands]
-    return sum(delta_h), sum(delta_d)
+    return Position(sum(delta_h), sum(delta_d))
+
+
+def day2bis(commands: List[CommandV2]) -> (int, int):
+    """
+    Based on your calculations, the planned course doesn't seem to make any
+    sense. You find the submarine manual and discover that the process is
+    actually slightly more complicated.
+
+    In addition to horizontal position and depth, you'll also need to track a
+    third value, aim, which also starts at 0. The commands also mean something
+    entirely different than you first thought:
+
+        down X increases your aim by X units.
+        up X decreases your aim by X units.
+        forward X does two things:
+            It increases your horizontal position by X units.
+            It increases your depth by your aim multiplied by X.
+
+    Again note that since you're on a submarine, down and up do the opposite of
+    what you might expect: "down" means aiming in the positive direction.
+
+    Now, the above example does something different:
+
+        forward 5 adds 5 to your horizontal position, a total of 5. Because your aim is 0, your depth does not change.
+        down 5 adds 5 to your aim, resulting in a value of 5.
+        forward 8 adds 8 to your horizontal position, a total of 13. Because your aim is 5, your depth increases by 8*5=40.
+        up 3 decreases your aim by 3, resulting in a value of 2.
+        down 8 adds 8 to your aim, resulting in a value of 10.
+        forward 2 adds 2 to your horizontal position, a total of 15. Because your aim is 10, your depth increases by 2*10=20 to a total of 60.
+
+    After following these new instructions, you would have a horizontal position
+    of 15 and a depth of 60. (Multiplying these produces 900.)
+
+    Using this new interpretation of the commands, calculate the horizontal
+    position and depth you would have after following the planned course. What
+    do you get if you multiply your final horizontal position by your final
+    depth?
+    """
+    aim = 0
+    pos = Position(0, 0)
+
+    for com in commands:
+        match com.label:
+            case "down":
+                aim += com.val
+            case "up":
+                aim -= com.val
+            case "forward":
+                pos.h += com.val
+                pos.d += aim * com.val
+            case _:
+                raise UnknownCommand(com)
+
+    return pos
 
 
 def main():
@@ -212,14 +284,18 @@ def main():
     print("Day 01    :", day1(all_depth_int))
     print("Day 01 bis:", day1_bis(all_depth_int))
 
-    with open("input_day2.txt") as instructions_file:
-        instructions = [
-            (Command(com, int(val)))
-            for com, val in (line.split() for line in instructions_file if line != "\n")
-        ]
+    with open("input_day2.txt") as commands_file:
+        raw_commands = [line for line in commands_file if line != "\n"]
 
-    h_pos, d_pos = day2(instructions)
-    print("Day 02    :", h_pos * d_pos)
+    commands = [CommandV1(line) for line in raw_commands]
+
+    pos = day2(commands)
+    print("Day 02    :", pos.h * pos.d)
+
+    commands_bis = [CommandV2(line) for line in raw_commands]
+
+    pos_bis = day2bis(commands_bis)
+    print("Day 02 bis:", pos_bis.h * pos_bis.d)
 
 
 if __name__ == "__main__":
