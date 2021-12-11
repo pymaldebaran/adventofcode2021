@@ -12,7 +12,13 @@ more-itertools = "^8.12.0"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 black = "^21.12b0"
+pytest-sugar = "^0.9.4"
+pytest-pudb = "^0.7.0"
+xdoctest = "^0.15.10"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = "--xdoctest"
