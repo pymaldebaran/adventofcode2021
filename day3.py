@@ -67,6 +67,72 @@ def lines_to_cols(lines: List[str]) -> List[str]:
     return ["".join(col) for col in zip(*lines)]
 
 
+def least_common_char(chars: str, default_to: str | None = None):
+    """
+    Return the least common char of the provided string.
+
+    Args:
+        chars: the string to search the char in
+        default_to: the char to return if ever there is a tie for the first place
+
+    Returns:
+        the least common char
+
+    Examples:
+        >>> least_common_char('AAABB')
+        'B'
+        >>> least_common_char('AABBB')
+        'A'
+        >>> least_common_char('AABB', 'B')
+        'B'
+        >>> least_common_char('AABB', 'A')
+        'A'
+    """
+    counter = Counter(chars)
+    if default_to is None:
+        return counter.most_common(2)[1][0]
+    else:
+        most_common_char, most_common_val = counter.most_common(2)[0]
+        least_common_char, least_common_val = counter.most_common(2)[1]
+        if most_common_val == least_common_val:
+            return default_to
+        else:
+            return least_common_char
+
+
+def most_common_char(chars: str, default_to: str | None = None):
+    """
+    Return the most common char of the provided string.
+
+    Args:
+        chars: the string to search the char in
+        default_to: the char to return if ever there is a tie for the first place
+
+    Returns:
+        the most common char
+
+    Examples:
+        >>> most_common_char('AAABB')
+        'A'
+        >>> most_common_char('AABBB')
+        'B'
+        >>> most_common_char('AABB', 'B')
+        'B'
+        >>> most_common_char('AABB', 'A')
+        'A'
+    """
+    counter = Counter(chars)
+    if default_to is None:
+        return counter.most_common(1)[0][0]
+    else:
+        most_common_char, most_common_val = counter.most_common(2)[0]
+        least_common_char, least_common_val = counter.most_common(2)[1]
+        if most_common_val == least_common_val:
+            return default_to
+        else:
+            return most_common_char
+
+
 def most_common_chars_in_cols(cols: List[str]) -> str:
     """
     Return the most common char of each columns.
@@ -82,7 +148,7 @@ def most_common_chars_in_cols(cols: List[str]) -> str:
         >>> most_common_chars_in_cols(['AAAB', 'BBBA', 'ABBB', 'BAAA', 'BABB'])
         'ABBAB'
     """
-    return "".join([Counter(col).most_common(1)[0][0] for col in cols])
+    return "".join([most_common_char(col) for col in cols])
 
 
 def day3(diagnostics: List[str]) -> DiagnosticReport:
@@ -145,3 +211,142 @@ def day3(diagnostics: List[str]) -> DiagnosticReport:
     most_commons = most_common_chars_in_cols(diagnostic_cols)
 
     return DiagnosticReport(gamma_binary=most_commons)
+
+
+@dataclass
+class AdvancedDiagnosticReport(DiagnosticReport):
+    oxygen_generator_binary: str
+    CO2_scrubber_binary: str
+
+    @property
+    def oxygen_generator(self) -> int:
+        return int(self.oxygen_generator_binary, base=2)
+
+    @property
+    def CO2_scrubber(self) -> int:
+        return int(self.CO2_scrubber_binary, base=2)
+
+    def life_support(self) -> int:
+        return self.oxygen_generator * self.CO2_scrubber
+
+
+def day3bis(diagnostics: List[str]) -> AdvancedDiagnosticReport:
+    """
+    Next, you should verify the life support rating, which can be determined by
+    multiplying the oxygen generator rating by the CO2 scrubber rating.
+
+    Both the oxygen generator rating and the CO2 scrubber rating are values that
+    can be found in your diagnostic report - finding them is the tricky part.
+    Both values are located using a similar process that involves filtering out
+    values until only one remains. Before searching for either rating value,
+    start with the full list of binary numbers from your diagnostic report and
+    consider just the first bit of those numbers. Then:
+
+    -   Keep only numbers selected by the bit criteria for the type of rating
+        value for which you are searching. Discard numbers which do not match
+        the bit criteria.
+    -   If you only have one number left, stop; this is the rating value for
+        which you are searching.
+    -   Otherwise, repeat the process, considering the next bit to the right.
+
+    The bit criteria depends on which type of rating value you want to find:
+
+    -   To find oxygen generator rating, determine the most common value (0 or
+        1) in the current bit position, and keep only numbers with that bit in
+        that position. If 0 and 1 are equally common, keep values with a 1 in
+        the position being considered.
+    -   To find CO2 scrubber rating, determine the least common value (0 or 1)
+        in the current bit position, and keep only numbers with that bit in that
+        position. If 0 and 1 are equally common, keep values with a 0 in the
+        position being considered.
+
+    For example, to determine the oxygen generator rating value using the same
+    example diagnostic report from above:
+
+    -   Start with all 12 numbers and consider only the first bit of each
+        number. There are more 1 bits (7) than 0 bits (5), so keep only the 7
+        numbers with a 1 in the first position: 11110, 10110, 10111, 10101,
+        11100, 10000, and 11001.
+    -   Then, consider the second bit of the 7 remaining numbers: there are more
+        0 bits (4) than 1 bits (3), so keep only the 4 numbers with a 0 in the
+        second position: 10110, 10111, 10101, and 10000.
+    -   In the third position, three of the four numbers have a 1, so keep those
+        three: 10110, 10111, and 10101.
+    -   In the fourth position, two of the three numbers have a 1, so keep those
+        two: 10110 and 10111.
+    -   In the fifth position, there are an equal number of 0 bits and 1 bits
+        (one each). So, to find the oxygen generator rating, keep the number
+        with a 1 in that position: 10111.
+    -   As there is only one number left, stop; the oxygen generator rating is
+        10111, or 23 in decimal.
+
+    Then, to determine the CO2 scrubber rating value from the same example
+    above:
+
+    -   Start again with all 12 numbers and consider only the first bit of each
+        number. There are fewer 0 bits (5) than 1 bits (7), so keep only the 5
+        numbers with a 0 in the first position: 00100, 01111, 00111, 00010, and
+        01010.
+    -   Then, consider the second bit of the 5 remaining numbers: there are
+        fewer 1 bits (2) than 0 bits (3), so keep only the 2 numbers with a 1 in
+        the second position: 01111 and 01010.
+    -   In the third position, there are an equal number of 0 bits and 1 bits
+        (one each). So, to find the CO2 scrubber rating, keep the number with a
+        0 in that position: 01010.
+    -   As there is only one number left, stop; the CO2 scrubber rating is
+        01010, or 10 in decimal.
+
+    Finally, to find the life support rating, multiply the oxygen generator
+    rating (23) by the CO2 scrubber rating (10) to get 230.
+
+    Use the binary numbers in your diagnostic report to calculate the oxygen
+    generator rating and CO2 scrubber rating, then multiply them together. What
+    is the life support rating of the submarine? (Be sure to represent your
+    answer in decimal, not binary.)
+    """
+    # TODO get rid of this and merge day3 and report constructor
+    limited_report = day3(diagnostics)
+
+    cols = lines_to_cols(diagnostics)
+
+    possible_oxy_gen = diagnostics[:]
+    for idx, _ in enumerate(cols):
+        diagnostic_cols = lines_to_cols(possible_oxy_gen)
+        col = diagnostic_cols[idx]
+        possible_oxy_gen = list(
+            filter(
+                lambda bits: bits[idx] == most_common_char(col, default_to="1"),
+                possible_oxy_gen,
+            )
+        )
+
+        if len(possible_oxy_gen) == 1:
+            break
+    else:
+        assert False, "No oxygen generator rating found"
+
+    oxygen_generator_binary = possible_oxy_gen[0]
+
+    possible_CO2_scr = diagnostics[:]
+    for idx, _ in enumerate(cols):
+        diagnostic_cols = lines_to_cols(possible_CO2_scr)
+        col = diagnostic_cols[idx]
+        possible_CO2_scr = list(
+            filter(
+                lambda bits: bits[idx] == least_common_char(col, default_to="0"),
+                possible_CO2_scr,
+            )
+        )
+
+        if len(possible_CO2_scr) == 1:
+            break
+    else:
+        assert False, "No oxygen generator rating found"
+
+    CO2_scrubber_binary = possible_CO2_scr[0]
+
+    return AdvancedDiagnosticReport(
+        gamma_binary=limited_report.gamma_binary,
+        oxygen_generator_binary=oxygen_generator_binary,
+        CO2_scrubber_binary=CO2_scrubber_binary,
+    )

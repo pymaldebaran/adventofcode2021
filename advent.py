@@ -52,10 +52,22 @@ def main():
         raw_diagnostic = [line.strip() for line in diagnostic_file if line != "\n"]
 
     print("Day 03    :")
-    diagnostic = day3.day3(raw_diagnostic)
-    print(f"\tgamma  : {diagnostic.gamma_binary} -> {diagnostic.gamma}")
-    print(f"\tepsilon: {diagnostic.epsilon_binary} -> {diagnostic.epsilon}")
-    print(f"\tpower  : {diagnostic.power_consumption()}")
+    diag = day3.day3(raw_diagnostic)
+    print(f"\tgamma  : {diag.gamma_binary} -> {diag.gamma}")
+    print(f"\tepsilon: {diag.epsilon_binary} -> {diag.epsilon}")
+    print(f"\tpower  : {diag.power_consumption()}")
+
+    print("Day 03bis :")
+    diag_bis = day3.day3bis(raw_diagnostic)
+    print(
+        f"\toxygen generator rating : "
+        f"{diag_bis.oxygen_generator_binary} -> {diag_bis.oxygen_generator}"
+    )
+    print(
+        f"\tCO2 scrubber rating     : "
+        f"{diag_bis.CO2_scrubber_binary} -> {diag_bis.CO2_scrubber}"
+    )
+    print(f"\tlife support            : {diag_bis.life_support()}")
 
 
 if __name__ == "__main__":

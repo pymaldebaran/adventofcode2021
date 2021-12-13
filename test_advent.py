@@ -1,3 +1,5 @@
+from assertpy import assert_that, soft_assertions
+
 import day1
 import day2
 import day3
@@ -46,8 +48,25 @@ SIMPLE_DAY_3 = [
 
 def test_day3_on_simple_exemple():
     diagnostic = day3.day3(SIMPLE_DAY_3)
-    assert diagnostic.gamma == 22
-    assert diagnostic.gamma_binary == "10110"
-    assert diagnostic.epsilon == 9
-    assert diagnostic.epsilon_binary == "01001"
-    assert diagnostic.power_consumption() == 198
+    with soft_assertions():
+        (
+            assert_that(diagnostic)
+            .has_gamma(22)
+            .has_gamma_binary("10110")
+            .has_epsilon(9)
+            .has_epsilon_binary("01001")
+            .has_power_consumption(198)
+        )
+
+
+def test_day3bis_on_simple_exemple():
+    diagnostic = day3.day3bis(SIMPLE_DAY_3)
+    with soft_assertions():
+        (
+            assert_that(diagnostic)
+            .has_oxygen_generator(23)
+            .has_oxygen_generator_binary("10111")
+            .has_CO2_scrubber(10)
+            .has_CO2_scrubber_binary("01010")
+            .has_life_support(230)
+        )
