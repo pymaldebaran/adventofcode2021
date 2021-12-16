@@ -21,6 +21,7 @@ first. Each puzzle grants one star. Good luck!
 import day1
 import day2
 import day3
+import day4
 
 
 def main():
@@ -68,6 +69,16 @@ def main():
         f"{diag_bis.CO2_scrubber_binary} -> {diag_bis.CO2_scrubber}"
     )
     print(f"\tlife support            : {diag_bis.life_support()}")
+
+    # Day 4 #################################################################
+
+    with open("input_day4.txt") as bingo_file:
+        raw_bingo = bingo_file.read()
+    print("Day 04    :")
+    bingo = day4.day4(raw_bingo)
+    print(f"\tunmarked sum      : {bingo.winning_board().unmarked_sum()}")
+    print(f"\tlast called number: {bingo.last_called_number()}")
+    print(f"\tscore             : {bingo.score()}")
 
 
 if __name__ == "__main__":
