@@ -31,12 +31,30 @@ class Segment:
     Represent a segment from a point to another.
 
     Example:
-        >>> Segment(Point(1,2), Point(3,4))
-        Segment(Point(1,2) -> Point(3,4))
+        >>> Segment(Point(0,0), Point(3,3))
+        Segment(Point(0,0) -> Point(3,3))
     """
 
     _from: Point
     _to: Point
+
+    def __post_init__(self):
+        """
+        Normalisation of the segment:
+
+        - all vertical segments must be pointing down
+        - all horizontal segments must be pointing right
+        - all diagonal like a / segments must be pointing up-right
+        - all diagonal like a \\ segments must be pointing down-right
+        """
+        if self.is_horizontal() and self._from.x > self._to.x:
+            self._from, self._to = self._to, self._from
+        elif self.is_vertical() and self._from.y > self._to.y:
+            self._from, self._to = self._to, self._from
+        elif self.is_diagonal_anti_slash() and self._from.x > self._to.x:
+            self._from, self._to = self._to, self._from
+        elif self.is_diagonal_slash() and self._from.x > self._to.x:
+            self._from, self._to = self._to, self._from
 
     def __repr__(self) -> str:
         return f"Segment({self._from} -> {self._to})"
@@ -82,6 +100,52 @@ class Segment:
         """
         return self._from.y == self._to.y
 
+    def is_diagonal_anti_slash(self) -> bool:
+        """
+        Tell if the segment is diagonal like a \\
+
+        Examples:
+            >>> v = Segment.from_str('0,0 -> 5,5')
+            >>> v.is_diagonal_anti_slash()
+            True
+            >>> v = Segment.from_str('5,5 -> 0,0')
+            >>> v.is_diagonal_anti_slash()
+            True
+            >>> nv = Segment.from_str('0,0 -> 0,6')
+            >>> nv.is_diagonal_anti_slash()
+            False
+            >>> nv = Segment.from_str('0,0 -> 6,0')
+            >>> nv.is_diagonal_anti_slash()
+            False
+        """
+        # We use the fact that we only have horizontal, vertical and diagonal segments
+        return (self._from.x < self._to.x and self._from.y < self._to.y) or (
+            self._from.x > self._to.x and self._from.y > self._to.y
+        )
+
+    def is_diagonal_slash(self) -> bool:
+        """
+        Tell if the segment is diagonal like a \\
+
+        Examples:
+            >>> v = Segment.from_str('0,5 -> 5,0')
+            >>> v.is_diagonal_slash()
+            True
+            >>> v = Segment.from_str('5,0 -> 0,5')
+            >>> v.is_diagonal_slash()
+            True
+            >>> nv = Segment.from_str('0,0 -> 0,6')
+            >>> nv.is_diagonal_slash()
+            False
+            >>> nv = Segment.from_str('0,0 -> 6,0')
+            >>> nv.is_diagonal_slash()
+            False
+        """
+        # We use the fact that we only have horizontal, vertical and diagonal segments
+        return (self._from.x < self._to.x and self._from.y > self._to.y) or (
+            self._from.x > self._to.x and self._from.y < self._to.y
+        )
+
     def all_points(self) -> List[Point]:
         """
         Get all the points that belong to the segment.
@@ -101,16 +165,32 @@ class Segment:
             [Point(1,1), Point(1,2), Point(1,3)]
         """
         if self.is_horizontal():
-            from_x, to_x = self._from.x, self._to.x
-            start, stop = (from_x, to_x) if from_x < to_x else (to_x, from_x)
-            return [Point(x, self._from.y) for x in range(start, stop + 1)]
+            # Segments are normalized so no from/to order problem
+            return [Point(x, self._from.y) for x in range(self._from.x, self._to.x + 1)]
         elif self.is_vertical():
-            from_y, to_y = self._from.y, self._to.y
-            start, stop = (from_y, to_y) if from_y < to_y else (to_y, from_y)
-            return [Point(self._from.x, y) for y in range(start, stop + 1)]
+            # Segments are normalized so no from/to order problem
+            return [Point(self._from.x, y) for y in range(self._from.y, self._to.y + 1)]
+        elif self.is_diagonal_anti_slash():
+            # Segments are normalized so no from/to order problem
+            return [
+                Point(x, y)
+                for (x, y) in zip(
+                    range(self._from.x, self._to.x + 1),
+                    range(self._from.y, self._to.y + 1),
+                )
+            ]
+        elif self.is_diagonal_slash():
+            # Segments are normalized so no from/to order problem
+            return [
+                Point(x, y)
+                for (x, y) in zip(
+                    range(self._from.x, self._to.x + 1),
+                    range(self._from.y, self._to.y - 1, -1),
+                )
+            ]
         else:
-            raise NotImplementedError(
-                f"You try to apply all_points() to {self!r} that is neither vertical nor horizontal."
+            raise ValueError(
+                f"{self!r} is neither vertical nor horizontal nor diagonal."
             )
 
 
@@ -143,17 +223,15 @@ class HydrothermalVentsMap:
             seg for seg in self.segments if seg.is_vertical() or seg.is_horizontal()
         ]
 
-    def all_points(self) -> List[Point]:
+    def all_points_hv(self) -> List[Point]:
         """
-        Get all the points that belong to all the segments.
-
-        WARNING: take accounts only of horizontal or vertical segments.
+        Get all the points that belong to all the horizontal or vertical segments.
 
         Examples:
             >>> hvm = HydrothermalVentsMap.from_str('''1,1 -> 1,3
             ... 2,1 -> 2,3
             ... 1,1 -> 2,2''')
-            >>> hvm.all_points()
+            >>> hvm.all_points_hv()
             [Point(1,1), Point(1,2), Point(1,3), Point(2,1), Point(2,2), Point(2,3)]
         """
         return list(
@@ -162,24 +240,48 @@ class HydrothermalVentsMap:
             )
         )
 
-    def nb_overlaps(self) -> int:
+    def all_points(self) -> List[Point]:
         """
-        Count the number of overlaps in the segments.
+        Get all the points that belong to all the segments.
+
+        Examples:
+            >>> hvm = HydrothermalVentsMap.from_str('''1,1 -> 1,3
+            ... 2,1 -> 2,3
+            ... 1,1 -> 2,2''')
+            >>> hvm.all_points()
+            [Point(1,1), Point(1,2), Point(1,3), Point(2,1), Point(2,2), Point(2,3), Point(1,1), Point(2,2)]
+        """
+        return list(
+            itertools.chain.from_iterable((seg.all_points() for seg in self.segments))
+        )
+
+    def nb_overlaps_hv(self) -> int:
+        """
+        Count the number of overlaps in the horizontal and vertical segments.
+        """
+        counter = Counter(self.all_points_hv())
+        return len(list(filter(lambda pair: pair[1] >= 2, counter.most_common())))
+
+    def nb_overlaps_full(self) -> int:
+        """
+        Count the number of overlaps in the horizontal, vertical and diagonal segments.
         """
         counter = Counter(self.all_points())
         return len(list(filter(lambda pair: pair[1] >= 2, counter.most_common())))
 
-    def map(self) -> str:
+    def map(self, hv_only=False) -> str:
         """
         Display the HydrothermalVentsMap the same way as in the puzzle directives.
+
+        This is for visual debug purpose only.
         """
-        all_points = self.all_points()
+        all_points = self.all_points_hv() if hv_only else self.all_points()
         max_x = max(x for x, _ in all_points)
         max_y = max(y for _, y in all_points)
 
         map_elems = [["." for _ in range(max_x + 1)] for _ in range(max_y + 1)]
 
-        counter = Counter(self.all_points())
+        counter = Counter(all_points)
         for (x, y), count in counter.most_common():
             map_elems[y][x] = "." if count == 0 else str(count)
 
@@ -245,5 +347,37 @@ def day5(raw_points: str) -> HydrothermalVentsMap:
 
     Consider only horizontal and vertical lines. At how many points do at least
     two lines overlap?
+
+    --- Part Two ---
+
+    Unfortunately, considering only horizontal and vertical lines doesn't give
+    you the full picture; you need to also consider diagonal lines.
+
+    Because of the limits of the hydrothermal vent mapping system, the lines in
+    your list will only ever be horizontal, vertical, or a diagonal line at
+    exactly 45 degrees. In other words:
+
+        An entry like 1,1 -> 3,3 covers points 1,1, 2,2, and 3,3.
+        An entry like 9,7 -> 7,9 covers points 9,7, 8,8, and 7,9.
+
+    Considering all lines from the above example would now produce the following
+    diagram:
+
+    1.1....11.
+    .111...2..
+    ..2.1.111.
+    ...1.2.2..
+    .112313211
+    ...1.2....
+    ..1...1...
+    .1.....1..
+    1.......1.
+    222111....
+
+    You still need to determine the number of points where at least two lines
+    overlap. In the above example, this is still anywhere in the diagram with a
+    2 or larger - now a total of 12 points.
+
+    Consider all of the lines. At how many points do at least two lines overlap?
     """
     return HydrothermalVentsMap.from_str(raw_points)

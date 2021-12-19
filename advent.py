@@ -95,7 +95,8 @@ def main():
 
     hydro_map = day5.day5(raw_hydro)
 
-    print("Day 05    :", hydro_map.nb_overlaps())
+    print("Day 05    :", hydro_map.nb_overlaps_hv())
+    print("Day 05bis :", hydro_map.nb_overlaps_full())
 
 
 if __name__ == "__main__":

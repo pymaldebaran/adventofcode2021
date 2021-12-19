@@ -213,4 +213,10 @@ def input_day5():
 def test_day5_on_simple_example(input_day5):
     hydro_map = day5.day5(input_day5)
 
-    assert_that(hydro_map).has_nb_overlaps(5)
+    assert_that(hydro_map).has_nb_overlaps_hv(5)
+
+
+def test_day5bis_on_simple_example(input_day5):
+    hydro_map = day5.day5(input_day5)
+
+    assert_that(hydro_map).has_nb_overlaps_full(12)
