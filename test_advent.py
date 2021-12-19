@@ -8,6 +8,7 @@ import day1
 import day2
 import day3
 import day4
+import day5
 
 
 @pytest.fixture
@@ -192,3 +193,24 @@ def test_day4bis_on_simple_example(input_day4):
         )
         assert_that(last_board).has_unmarked_sum(148)
         assert_that(last_board).has_score(1924)
+
+
+@pytest.fixture
+def input_day5():
+    return """0,9 -> 5,9
+8,0 -> 0,8
+9,4 -> 3,4
+2,2 -> 2,1
+7,0 -> 7,4
+6,4 -> 2,0
+0,9 -> 2,9
+3,4 -> 1,4
+0,0 -> 8,8
+5,5 -> 8,2
+"""
+
+
+def test_day5_on_simple_example(input_day5):
+    hydro_map = day5.day5(input_day5)
+
+    assert_that(hydro_map).has_nb_overlaps(5)

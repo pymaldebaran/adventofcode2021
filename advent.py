@@ -22,6 +22,7 @@ import day1
 import day2
 import day3
 import day4
+import day5
 
 
 def main():
@@ -86,6 +87,15 @@ def main():
     print(f"\tunmarked sum      : {bingo.last_winning_board().unmarked_sum()}")
     print(f"\tlast called number: {bingo.last_winning_board().winning_number}")
     print(f"\tscore             : {bingo.last_winning_board().score()}")
+
+    # Day 5 #################################################################
+
+    with open("input_day5.txt") as hydro_file:
+        raw_hydro = hydro_file.read()
+
+    hydro_map = day5.day5(raw_hydro)
+
+    print("Day 05    :", hydro_map.nb_overlaps())
 
 
 if __name__ == "__main__":
