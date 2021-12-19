@@ -136,10 +136,12 @@ assertpy_add_extension(is_array_equal_to)
 def test_day4_on_simple_example(input_day4):
     bingo = day4.day4(input_day4)
 
+    winning_board = bingo.first_winning_board()
+
     with soft_assertions():
-        assert_that(bingo).has_last_called_number(24)
+        assert_that(winning_board).has_winning_number(24)
         (
-            assert_that(bingo.winning_board().numbers).is_array_equal_to(
+            assert_that(winning_board.numbers).is_array_equal_to(
                 np.array(
                     [
                         [14, 21, 17, 24, 4],
@@ -152,7 +154,7 @@ def test_day4_on_simple_example(input_day4):
             )
         )
         (
-            assert_that(bingo.winning_board().marked).is_array_equal_to(
+            assert_that(winning_board.marked).is_array_equal_to(
                 np.array(
                     [
                         [True, True, True, True, True],
@@ -164,5 +166,29 @@ def test_day4_on_simple_example(input_day4):
                 )
             )
         )
-        assert_that(bingo.winning_board()).has_unmarked_sum(188)
-        assert_that(bingo).has_score(4512)
+        assert_that(winning_board).has_unmarked_sum(188)
+        assert_that(winning_board).has_score(4512)
+
+
+def test_day4bis_on_simple_example(input_day4):
+    bingo = day4.day4(input_day4)
+
+    last_board = bingo.last_winning_board()
+
+    with soft_assertions():
+        assert_that(last_board).has_winning_number(13)
+        (
+            assert_that(last_board.numbers).is_array_equal_to(
+                np.array(
+                    [
+                        [3, 15, 0, 2, 22],
+                        [9, 18, 13, 17, 5],
+                        [19, 8, 7, 25, 23],
+                        [20, 11, 10, 24, 4],
+                        [14, 21, 16, 12, 6],
+                    ]
+                )
+            )
+        )
+        assert_that(last_board).has_unmarked_sum(148)
+        assert_that(last_board).has_score(1924)

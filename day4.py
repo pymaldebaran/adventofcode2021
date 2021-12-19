@@ -8,6 +8,7 @@ from numpy.typing import NDArray
 class Board:
     numbers: NDArray[int]
     marked: NDArray[bool] = field(init=False)
+    winning_number: int | None = field(init=False, default=None, repr=False)
 
     def __post_init__(self):
         self.marked = np.zeros_like(self.numbers, dtype=bool)
@@ -118,25 +119,31 @@ class Board:
         except StopIteration:
             return False
 
+    def score(self) -> int:
+        return self.unmarked_sum() * self.winning_number
+
 
 @dataclass
 class Bingo:
     drawn_numbers: List[int]
     boards: List[Board]
-    last_called_number: int | None = field(init=False, default=None)
-    winning_board_idx: int | None = field(init=False, default=None)
+    winning_board_idx: List[int] = field(init=False, default_factory=list, repr=False)
 
     def __post_init__(self):
         for n in self.drawn_numbers:
-            self.last_called_number = n
-
-            for board in self.boards:
-                board.try_to_mark_number(n)
+            for idx, board in enumerate(self.boards):
+                # We update only the not yet won boards
+                if idx not in self.winning_board_idx:
+                    board.try_to_mark_number(n)
 
             for idx, board in enumerate(self.boards):
-                if board.do_we_have_a_winner():
-                    self.winning_board_idx = idx
-                    return
+                if idx not in self.winning_board_idx and board.do_we_have_a_winner():
+                    board.winning_number = n
+                    self.winning_board_idx.append(idx)
+
+            # We must stop as soon as all boards are won
+            if len(self.winning_board_idx) == len(self.boards):
+                return
 
     @staticmethod
     def from_str(config: str) -> "Bingo":
@@ -153,7 +160,7 @@ class Bingo:
             ...  2 20
             ... '''
             >>> Bingo.from_str(conf)
-            Bingo(drawn_numbers=[1, 2, 3], boards=[Board(*1 1 | 1 1), Board(20 20 | *2 20)], last_called_number=3, winning_board_idx=None)
+            Bingo(drawn_numbers=[1, 2, 3], boards=[Board(*1 1 | 1 1), Board(20 20 | *2 20)])
         """
         raw_num, *raw_boards = config.strip().split("\n\n")
 
@@ -162,11 +169,17 @@ class Bingo:
 
         return Bingo(drawn_numbers=num, boards=boards)
 
-    def winning_board(self) -> Board | None:
-        return self.boards[self.winning_board_idx]
+    def first_winning_board(self) -> Board | None:
+        if self.winning_board_idx:
+            return self.boards[self.winning_board_idx[0]]
+        else:
+            return None
 
-    def score(self) -> int:
-        return self.winning_board().unmarked_sum() * self.last_called_number
+    def last_winning_board(self) -> Board | None:
+        if self.winning_board_idx:
+            return self.boards[self.winning_board_idx[-1]]
+        else:
+            return None
 
 
 def day4(config: str) -> Bingo:
@@ -248,6 +261,24 @@ def day4(config: str) -> Bingo:
 
     To guarantee victory against the giant squid, figure out which board will
     win first. What will your final score be if you choose that board?
+
+    --- Part Two ---
+
+    On the other hand, it might be wise to try a different strategy: let the
+    giant squid win.
+
+    You aren't sure how many bingo boards a giant squid could play at once, so
+    rather than waste time counting its arms, the safe thing to do is to figure
+    out which board will win last and choose that one. That way, no matter which
+    boards it picks, it will win for sure.
+
+    In the above example, the second board is the last to win, which happens
+    after 13 is eventually called and its middle column is completely marked. If
+    you were to keep playing until this point, the second board would have a sum
+    of unmarked numbers equal to 148 for a final score of 148 * 13 = 1924.
+
+    Figure out which board will win last. Once it wins, what would its final
+    score be?
     """
     bingo = Bingo.from_str(config)
 

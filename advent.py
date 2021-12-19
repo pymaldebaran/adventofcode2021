@@ -74,11 +74,18 @@ def main():
 
     with open("input_day4.txt") as bingo_file:
         raw_bingo = bingo_file.read()
-    print("Day 04    :")
+
     bingo = day4.day4(raw_bingo)
-    print(f"\tunmarked sum      : {bingo.winning_board().unmarked_sum()}")
-    print(f"\tlast called number: {bingo.last_called_number}")
-    print(f"\tscore             : {bingo.score()}")
+
+    print("Day 04    :")
+    print(f"\tunmarked sum      : {bingo.first_winning_board().unmarked_sum()}")
+    print(f"\tlast called number: {bingo.first_winning_board().winning_number}")
+    print(f"\tscore             : {bingo.first_winning_board().score()}")
+
+    print("Day 04 bis:")
+    print(f"\tunmarked sum      : {bingo.last_winning_board().unmarked_sum()}")
+    print(f"\tlast called number: {bingo.last_winning_board().winning_number}")
+    print(f"\tscore             : {bingo.last_winning_board().score()}")
 
 
 if __name__ == "__main__":
