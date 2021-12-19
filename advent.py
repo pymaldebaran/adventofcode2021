@@ -77,7 +77,7 @@ def main():
     print("Day 04    :")
     bingo = day4.day4(raw_bingo)
     print(f"\tunmarked sum      : {bingo.winning_board().unmarked_sum()}")
-    print(f"\tlast called number: {bingo.last_called_number()}")
+    print(f"\tlast called number: {bingo.last_called_number}")
     print(f"\tscore             : {bingo.score()}")
 
 

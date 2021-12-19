@@ -1,42 +1,148 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Tuple
+import numpy as np
+from numpy.typing import NDArray
 
 
 @dataclass
 class Board:
-    numbers: List[List[int]]
+    numbers: NDArray[int]
+    marked: NDArray[bool] = field(init=False)
+
+    def __post_init__(self):
+        self.marked = np.zeros_like(self.numbers, dtype=bool)
+
+    def __repr__(self) -> str:
+        content = " | ".join(
+            [
+                " ".join(
+                    [
+                        f'{"*" if check else ""}{num}'
+                        for num, check in zip(num_line, check_line)
+                    ]
+                )
+                for num_line, check_line in zip(self.numbers, self.marked)
+            ]
+        )
+        return f"Board({content})"
 
     @staticmethod
     def from_str(raw_board: str) -> "Board":
         """
+        Build a Board from a classic string representation of it.
+
         Example:
             >>> conf = '''1 2
             ... 3 4
             ... '''
             >>> Board.from_str(conf)
-            Board(numbers=[[1, 2], [3, 4]])
+            Board(1 2 | 3 4)
         """
         return Board(
-            numbers=[
-                [int(v) for v in line.split()] for line in raw_board.strip().split("\n")
-            ]
+            numbers=np.array(
+                [
+                    [int(v) for v in line.split()]
+                    for line in raw_board.strip().split("\n")
+                ]
+            )
         )
 
-    def checked(self) -> List[List[bool]]:
-        return [[False] * 5] * 5
-
     def unmarked_sum(self) -> int:
-        return 0
+        return self.numbers[~self.marked].sum()
+
+    def do_we_have_a_winner(self) -> bool:
+        """
+        Determine if we have a winning board. If any line or column if fully marked the board is a won.
+
+        Example:
+            >>> brd = Board.from_str('''1 2
+            ... 3 4''')
+            >>> brd.marked = np.array([[0, 0], [0, 0]], bool)
+            >>> brd.do_we_have_a_winner()
+            False
+            >>> brd.marked = np.array([[1, 0], [0, 1]], bool)
+            >>> brd.do_we_have_a_winner()
+            False
+            >>> brd.marked = np.array([[1, 1], [0, 0]], bool)
+            >>> brd.do_we_have_a_winner()
+            True
+            >>> brd.marked = np.array([[0, 0], [1, 1]], bool)
+            >>> brd.do_we_have_a_winner()
+            True
+            >>> brd.marked = np.array([[1, 0], [1, 0]], bool)
+            >>> brd.do_we_have_a_winner()
+            True
+            >>> brd.marked = np.array([[0, 1], [0, 1]], bool)
+            >>> brd.do_we_have_a_winner()
+            True
+        """
+        for line in self.marked:
+            if line.all():
+                return True
+
+        for col in self.marked.T:
+            if col.all():
+                return True
+
+        return False
+
+    def try_to_mark_number(self, n: int) -> bool:
+        """
+        Mark a number if it is present in the board.
+
+        Example:
+            >>> brd = Board.from_str('''1 2
+            ... 3 4''')
+            >>> brd
+            Board(1 2 | 3 4)
+            >>> brd.try_to_mark_number(2)
+            True
+            >>> brd
+            Board(1 *2 | 3 4)
+            >>> brd.try_to_mark_number(5)
+            False
+            >>> brd
+            Board(1 *2 | 3 4)
+            >>> brd.try_to_mark_number(3)
+            True
+            >>> brd
+            Board(1 *2 | *3 4)
+        """
+        try:
+            # BLACKMAGIC see https://stackoverflow.com/a/43821453
+            found_idx = next(
+                (idx for idx, val in np.ndenumerate(self.numbers) if val == n)
+            )
+            self.marked[found_idx] = True
+            return True
+        except StopIteration:
+            return False
 
 
 @dataclass
 class Bingo:
     drawn_numbers: List[int]
     boards: List[Board]
+    last_called_number: int | None = field(init=False, default=None)
+    winning_board_idx: int | None = field(init=False, default=None)
+
+    def __post_init__(self):
+        for n in self.drawn_numbers:
+            self.last_called_number = n
+
+            for board in self.boards:
+                board.try_to_mark_number(n)
+
+            for idx, board in enumerate(self.boards):
+                if board.do_we_have_a_winner():
+                    self.winning_board_idx = idx
+                    return
 
     @staticmethod
     def from_str(config: str) -> "Bingo":
         """
+        Build a Bingo game from a classic string representation of it.
+
         Example:
             >>> conf = '''1,2,3
             ...
@@ -47,7 +153,7 @@ class Bingo:
             ...  2 20
             ... '''
             >>> Bingo.from_str(conf)
-            Bingo(drawn_numbers=[1, 2, 3], boards=[Board(numbers=[[1, 1], [1, 1]]), Board(numbers=[[20, 20], [2, 20]])])
+            Bingo(drawn_numbers=[1, 2, 3], boards=[Board(*1 1 | 1 1), Board(20 20 | *2 20)], last_called_number=3, winning_board_idx=None)
         """
         raw_num, *raw_boards = config.strip().split("\n\n")
 
@@ -57,13 +163,10 @@ class Bingo:
         return Bingo(drawn_numbers=num, boards=boards)
 
     def winning_board(self) -> Board | None:
-        return Board(numbers=[[0] * 5] * 5)
-
-    def last_called_number(self) -> int | None:
-        return 0
+        return self.boards[self.winning_board_idx]
 
     def score(self) -> int:
-        return 0
+        return self.winning_board().unmarked_sum() * self.last_called_number
 
 
 def day4(config: str) -> Bingo:

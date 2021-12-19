@@ -1,4 +1,6 @@
 from assertpy import assert_that, soft_assertions
+from assertpy import add_extension as assertpy_add_extension
+import numpy as np
 
 import pytest
 
@@ -6,6 +8,7 @@ import day1
 import day2
 import day3
 import day4
+
 
 @pytest.fixture
 def input_day1():
@@ -24,9 +27,11 @@ def test_day1bis_on_simple_exemple(input_day1):
 def input_day2_raw():
     return ["forward 5", "down 5", "forward 8", "up 3", "down 8", "forward 2"]
 
+
 @pytest.fixture
 def input_day2(input_day2_raw):
     return [day2.CommandV1(line) for line in input_day2_raw]
+
 
 @pytest.fixture
 def input_day2_bis(input_day2_raw):
@@ -43,20 +48,20 @@ def test_day2bis_on_simple_exemple(input_day2_bis):
 
 @pytest.fixture
 def input_day3():
-    return  [
-    "00100",
-    "11110",
-    "10110",
-    "10111",
-    "10101",
-    "01111",
-    "00111",
-    "11100",
-    "10000",
-    "11001",
-    "00010",
-    "01010",
-]
+    return [
+        "00100",
+        "11110",
+        "10110",
+        "10111",
+        "10101",
+        "01111",
+        "00111",
+        "11100",
+        "10000",
+        "11001",
+        "00010",
+        "01010",
+    ]
 
 
 def test_day3_on_simple_exemple(input_day3):
@@ -117,31 +122,47 @@ def test_bingo_can_be_parsed_from_str(input_day4):
         assert_that(bingo.boards).is_length(3)
 
 
+def is_array_equal_to(self, other):
+    if not np.array_equal(self.val, other):
+        return self.error(f"Expected {self.val} to be equal to {other}, but was not.")
+
+    return self
+
+
+# Wa had a new assertion to assertpy
+assertpy_add_extension(is_array_equal_to)
+
+
 def test_day4_on_simple_example(input_day4):
     bingo = day4.day4(input_day4)
 
     with soft_assertions():
         assert_that(bingo).has_last_called_number(24)
         (
-            assert_that(bingo.winning_board())
-            .has_numbers(
-                [
-                    [14, 21, 17, 24, 4],
-                    [10, 16, 15, 9, 19],
-                    [18, 8, 23, 26, 20],
-                    [22, 11, 13, 6, 5],
-                    [2, 0, 12, 3, 7],
-                ]
+            assert_that(bingo.winning_board().numbers).is_array_equal_to(
+                np.array(
+                    [
+                        [14, 21, 17, 24, 4],
+                        [10, 16, 15, 9, 19],
+                        [18, 8, 23, 26, 20],
+                        [22, 11, 13, 6, 5],
+                        [2, 0, 12, 3, 7],
+                    ]
+                )
             )
-            .has_checked(
-                [
-                    [True, True, True, True, True],
-                    [False, False, False, True, False],
-                    [False, False, True, False, False],
-                    [False, True, False, False, True],
-                    [True, True, False, False, True],
-                ]
-            )
-            .has_unmarked_sum(188)
         )
+        (
+            assert_that(bingo.winning_board().marked).is_array_equal_to(
+                np.array(
+                    [
+                        [True, True, True, True, True],
+                        [False, False, False, True, False],
+                        [False, False, True, False, False],
+                        [False, True, False, False, True],
+                        [True, True, False, False, True],
+                    ]
+                )
+            )
+        )
+        assert_that(bingo.winning_board()).has_unmarked_sum(188)
         assert_that(bingo).has_score(4512)
