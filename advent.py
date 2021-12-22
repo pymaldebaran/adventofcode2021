@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """
+Programme that solve all the puzzle of Advent of Code 2021.
+
 You're minding your own business on a ship at sea when the overboard alarm goes
 off! You rush to see if you can help. Apparently, one of the Elves tripped and
 accidentally sent the sleigh keys flying into the ocean!
@@ -25,7 +27,7 @@ import day4
 import day5
 
 
-def main():
+if __name__ == "__main__":
     # Day 1 #################################################################
     with open("input_day1.txt") as all_depth:
         all_depth_int = [int(depth) for depth in all_depth if depth != "\n"]
@@ -97,7 +99,3 @@ def main():
 
     print("Day 05    :", hydro_map.nb_overlaps_hv())
     print("Day 05bis :", hydro_map.nb_overlaps_full())
-
-
-if __name__ == "__main__":
-    main()
