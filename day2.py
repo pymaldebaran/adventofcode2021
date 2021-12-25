@@ -87,8 +87,8 @@ from typing import List
 class Position:
     """Represent a submarine position with horizontal and depth."""
 
-    h: int
-    d: int
+    horizontal: int
+    depth: int
 
 
 class UnknownCommand(Exception):
@@ -121,7 +121,7 @@ class CommandV1:
                 self.delta_h = 0
                 self.delta_d = -int(val)
             case _:
-                raise UnknownCommand(com)
+                raise UnknownCommand(label)
 
 
 @dataclass
@@ -157,8 +157,8 @@ def day2bis(commands: List[CommandV2]) -> (int, int):
             case "up":
                 aim -= com.val
             case "forward":
-                pos.h += com.val
-                pos.d += aim * com.val
+                pos.horizontal += com.val
+                pos.depth += aim * com.val
             case _:
                 raise UnknownCommand(com)
 

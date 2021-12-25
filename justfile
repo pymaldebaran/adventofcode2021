@@ -2,6 +2,10 @@
 black:
     black *.py
 
+# Display the first errors of pylint
+pylint:
+    pylint --output-format=colorized *.py 2> /dev/null | head
+
 # Remove all python artifacts
 clean:
     rm -rf __pycache__/

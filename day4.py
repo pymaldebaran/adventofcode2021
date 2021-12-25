@@ -96,7 +96,7 @@ be?
 """
 
 from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import List
 import numpy as np
 from numpy.typing import NDArray
 
@@ -155,7 +155,8 @@ class Board:
 
     def do_we_have_a_winner(self) -> bool:
         """
-        Determine if we have a winning board. If any line or column if fully marked the board is a won.
+        Determine if we have a winning board. If any line or column if fully
+        marked the board is a won.
 
         Example:
             >>> brd = Board.from_str('''1 2
@@ -189,7 +190,7 @@ class Board:
 
         return False
 
-    def try_to_mark_number(self, n: int) -> bool:
+    def try_to_mark_number(self, number: int) -> bool:
         """
         Mark a number if it is present in the board.
 
@@ -214,7 +215,7 @@ class Board:
         try:
             # BLACKMAGIC see https://stackoverflow.com/a/43821453
             found_idx = next(
-                (idx for idx, val in np.ndenumerate(self.numbers) if val == n)
+                (idx for idx, val in np.ndenumerate(self.numbers) if val == number)
             )
             self.marked[found_idx] = True
             return True
@@ -237,15 +238,15 @@ class Bingo:
 
     def __post_init__(self):
         """Simulate the drawing of all the numbers until all boards are won."""
-        for n in self.drawn_numbers:
+        for num in self.drawn_numbers:
             for idx, board in enumerate(self.boards):
                 # We update only the not yet won boards
                 if idx not in self.winning_board_idx:
-                    board.try_to_mark_number(n)
+                    board.try_to_mark_number(num)
 
             for idx, board in enumerate(self.boards):
                 if idx not in self.winning_board_idx and board.do_we_have_a_winner():
-                    board.winning_number = n
+                    board.winning_number = num
                     self.winning_board_idx.append(idx)
 
             # We must stop as soon as all boards are won
@@ -267,7 +268,8 @@ class Bingo:
             ...  2 20
             ... '''
             >>> Bingo.from_str(conf)
-            Bingo(drawn_numbers=[1, 2, 3], boards=[Board(*1 1 | 1 1), Board(20 20 | *2 20)])
+            Bingo(drawn_numbers=[1, 2, 3],
+            boards=[Board(*1 1 | 1 1), Board(20 20 | *2 20)])
         """
         raw_num, *raw_boards = config.strip().split("\n\n")
 
@@ -280,15 +282,15 @@ class Bingo:
         """Get the firts board to win according to the orders of drawn numbers."""
         if self.winning_board_idx:
             return self.boards[self.winning_board_idx[0]]
-        else:
-            return None
+
+        return None
 
     def last_winning_board(self) -> Board | None:
         """Get the last board to win according to the orders of drawn numbers."""
         if self.winning_board_idx:
             return self.boards[self.winning_board_idx[-1]]
-        else:
-            return None
+
+        return None
 
 
 def day4(config: str) -> Bingo:

@@ -124,7 +124,7 @@ the life support rating of the submarine? (Be sure to represent your answer in
 decimal, not binary.)
 """
 
-from typing import List, Tuple
+from typing import List
 from dataclasses import dataclass
 from collections import Counter
 
@@ -172,7 +172,7 @@ def bit_not_str(number: str) -> str:
     return "".join([str(int(not int(c, base=2))) for c in number])
 
 
-def bit_not(n, numbits) -> int:
+def bit_not(bits, numbits) -> int:
     """
     Compute et binary not.
 
@@ -185,12 +185,14 @@ def bit_not(n, numbits) -> int:
         >>> bit_not(0b10101011, 8) == 0b01010100
         True
     """
-    return (1 << numbits) - 1 - n
+    return (1 << numbits) - 1 - bits
 
 
 def lines_to_cols(lines: List[str]) -> List[str]:
     """
-    Transpose a matrix like list of string by returning the corresponding list of columns.
+    Transpose a matrix-like list of string.
+
+    It does so by returning the corresponding list of columns.
 
     Example:
         >>> lines_to_cols(['ABC', 'DEF'])
@@ -204,8 +206,8 @@ def least_common_char(chars: str, default_to: str | None = None):
     Return the least common char of the provided string.
 
     Args:
-        chars: the string to search the char in
-        default_to: the char to return if ever there is a tie for the first place
+    - chars: the string to search the char in
+    - default_to: the char to return if ever there is a tie for the first place
 
     Returns:
         the least common char
@@ -223,13 +225,14 @@ def least_common_char(chars: str, default_to: str | None = None):
     counter = Counter(chars)
     if default_to is None:
         return counter.most_common(2)[1][0]
-    else:
-        most_common_char, most_common_val = counter.most_common(2)[0]
-        least_common_char, least_common_val = counter.most_common(2)[1]
-        if most_common_val == least_common_val:
-            return default_to
-        else:
-            return least_common_char
+
+    _most_common_c, most_common_v = counter.most_common(2)[0]
+    least_common_c, least_common_v = counter.most_common(2)[1]
+
+    if most_common_v == least_common_v:
+        return default_to
+
+    return least_common_c
 
 
 def most_common_char(chars: str, default_to: str | None = None):
@@ -237,8 +240,8 @@ def most_common_char(chars: str, default_to: str | None = None):
     Return the most common char of the provided string.
 
     Args:
-        chars: the string to search the char in
-        default_to: the char to return if ever there is a tie for the first place
+    - chars: the string to search the char in
+    - default_to: the char to return if ever there is a tie for the first place
 
     Returns:
         the most common char
@@ -256,13 +259,14 @@ def most_common_char(chars: str, default_to: str | None = None):
     counter = Counter(chars)
     if default_to is None:
         return counter.most_common(1)[0][0]
-    else:
-        most_common_char, most_common_val = counter.most_common(2)[0]
-        least_common_char, least_common_val = counter.most_common(2)[1]
-        if most_common_val == least_common_val:
-            return default_to
-        else:
-            return most_common_char
+
+    most_common_c, most_common_v = counter.most_common(2)[0]
+    _least_common_c, least_common_v = counter.most_common(2)[1]
+
+    if most_common_v == least_common_v:
+        return default_to
+
+    return most_common_c
 
 
 def most_common_chars_in_cols(cols: List[str]) -> str:
@@ -294,24 +298,28 @@ def day3(diagnostics: List[str]) -> DiagnosticReport:
 
 @dataclass
 class AdvancedDiagnosticReport(DiagnosticReport):
+    """Represent a improved health diagnostic report of the submarine."""
+
     oxygen_generator_binary: str
-    CO2_scrubber_binary: str
+    co2_scrubber_binary: str
 
     @property
     def oxygen_generator(self) -> int:
+        """Get the oxygen generator value in decimal."""
         return int(self.oxygen_generator_binary, base=2)
 
     @property
-    def CO2_scrubber(self) -> int:
-        return int(self.CO2_scrubber_binary, base=2)
+    def co2_scrubber(self) -> int:
+        """Get the C02 scrubber value in decimal."""
+        return int(self.co2_scrubber_binary, base=2)
 
     def life_support(self) -> int:
-        return self.oxygen_generator * self.CO2_scrubber
+        """Get the global life support for the submarine."""
+        return self.oxygen_generator * self.co2_scrubber
 
 
 def day3bis(diagnostics: List[str]) -> AdvancedDiagnosticReport:
     """Solve day 3 puzzle part 2."""
-    # TODO get rid of this and merge day3 and report constructor
     limited_report = day3(diagnostics)
 
     cols = lines_to_cols(diagnostics)
@@ -320,12 +328,12 @@ def day3bis(diagnostics: List[str]) -> AdvancedDiagnosticReport:
     for idx, _ in enumerate(cols):
         diagnostic_cols = lines_to_cols(possible_oxy_gen)
         col = diagnostic_cols[idx]
-        possible_oxy_gen = list(
-            filter(
-                lambda bits: bits[idx] == most_common_char(col, default_to="1"),
-                possible_oxy_gen,
-            )
-        )
+
+        possible_oxy_gen = [
+            bits
+            for bits in possible_oxy_gen
+            if bits[idx] == most_common_char(col, default_to="1")
+        ]
 
         if len(possible_oxy_gen) == 1:
             break
@@ -334,26 +342,25 @@ def day3bis(diagnostics: List[str]) -> AdvancedDiagnosticReport:
 
     oxygen_generator_binary = possible_oxy_gen[0]
 
-    possible_CO2_scr = diagnostics[:]
+    possible_co2_scr = diagnostics[:]
     for idx, _ in enumerate(cols):
-        diagnostic_cols = lines_to_cols(possible_CO2_scr)
+        diagnostic_cols = lines_to_cols(possible_co2_scr)
         col = diagnostic_cols[idx]
-        possible_CO2_scr = list(
-            filter(
-                lambda bits: bits[idx] == least_common_char(col, default_to="0"),
-                possible_CO2_scr,
-            )
-        )
+        possible_co2_scr = [
+            bits
+            for bits in possible_co2_scr
+            if bits[idx] == least_common_char(col, default_to="0")
+        ]
 
-        if len(possible_CO2_scr) == 1:
+        if len(possible_co2_scr) == 1:
             break
     else:
         assert False, "No oxygen generator rating found"
 
-    CO2_scrubber_binary = possible_CO2_scr[0]
+    co2_scrubber_binary = possible_co2_scr[0]
 
     return AdvancedDiagnosticReport(
         gamma_binary=limited_report.gamma_binary,
         oxygen_generator_binary=oxygen_generator_binary,
-        CO2_scrubber_binary=CO2_scrubber_binary,
+        co2_scrubber_binary=co2_scrubber_binary,
     )

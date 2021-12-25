@@ -18,6 +18,8 @@ pytest-pudb = "^0.7.0"
 xdoctest = "^0.15.10"
 assertpy = "^1.1"
 pydocstyle = "^6.1.1"
+pylint = "^2.12.2"
+plerr = "^2.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -28,3 +30,12 @@ addopts = "--xdoctest"
 
 [tool.black]
 target-version = ['py310']
+
+[tool.pylint.messages_control]
+max-line-length = 88
+
+[tool.pylint.basic]
+good-names = ["x", "y", "z", "t", "i", "j", "k", "ex", "Run", "_"]
+
+[tool.pylint.similarities]
+ignore-imports="yes"

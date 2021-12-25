@@ -263,10 +263,12 @@ class Segment:
         if self.is_horizontal():
             # Segments are normalized so no from/to order problem
             return [Point(x, self._from.y) for x in range(self._from.x, self._to.x + 1)]
-        elif self.is_vertical():
+
+        if self.is_vertical():
             # Segments are normalized so no from/to order problem
             return [Point(self._from.x, y) for y in range(self._from.y, self._to.y + 1)]
-        elif self.is_diagonal_anti_slash():
+
+        if self.is_diagonal_anti_slash():
             # Segments are normalized so no from/to order problem
             return [
                 Point(x, y)
@@ -275,7 +277,8 @@ class Segment:
                     range(self._from.y, self._to.y + 1),
                 )
             ]
-        elif self.is_diagonal_slash():
+
+        if self.is_diagonal_slash():
             # Segments are normalized so no from/to order problem
             return [
                 Point(x, y)
@@ -284,10 +287,10 @@ class Segment:
                     range(self._from.y, self._to.y - 1, -1),
                 )
             ]
-        else:
-            raise ValueError(
-                f"{self!r} is neither vertical nor horizontal nor diagonal."
-            )
+
+        raise ValueError(
+            f"{self!r} is neither vertical nor horizontal nor diagonal."
+        )
 
 
 @dataclass
@@ -313,7 +316,9 @@ class HydrothermalVentsMap:
             ... 1,1 -> 2,2
             ... 3,3 -> 7,3''')
             >>> hvm.h_or_v_segments()
-            [Segment(Point(1,1) -> Point(1,3)), Segment(Point(2,1) -> Point(2,3)), Segment(Point(3,3) -> Point(7,3))]
+            [Segment(Point(1,1) -> Point(1,3)),
+            Segment(Point(2,1) -> Point(2,3)),
+            Segment(Point(3,3) -> Point(7,3))]
         """
         return [
             seg for seg in self.segments if seg.is_vertical() or seg.is_horizontal()
@@ -345,7 +350,8 @@ class HydrothermalVentsMap:
             ... 2,1 -> 2,3
             ... 1,1 -> 2,2''')
             >>> hvm.all_points()
-            [Point(1,1), Point(1,2), Point(1,3), Point(2,1), Point(2,2), Point(2,3), Point(1,1), Point(2,2)]
+            [Point(1,1), Point(1,2), Point(1,3), Point(2,1),
+            Point(2,2), Point(2,3), Point(1,1), Point(2,2)]
         """
         return list(
             itertools.chain.from_iterable((seg.all_points() for seg in self.segments))
@@ -357,7 +363,7 @@ class HydrothermalVentsMap:
         return len(list(filter(lambda pair: pair[1] >= 2, counter.most_common())))
 
     def nb_overlaps_full(self) -> int:
-        """Count the number of overlaps in the horizontal, vertical and diagonal segments."""
+        """Count the number of overlaps in the horiz., vertic. and diag. segments."""
         counter = Counter(self.all_points())
         return len(list(filter(lambda pair: pair[1] >= 2, counter.most_common())))
 
@@ -377,7 +383,7 @@ class HydrothermalVentsMap:
         for (x, y), count in counter.most_common():
             map_elems[y][x] = "." if count == 0 else str(count)
 
-        return "\n".join("".join([e for e in line]) for line in map_elems)
+        return "\n".join("".join(list(line)) for line in map_elems)
 
 
 def day5(raw_points: str) -> HydrothermalVentsMap:

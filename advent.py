@@ -29,7 +29,7 @@ import day5
 
 if __name__ == "__main__":
     # Day 1 #################################################################
-    with open("input_day1.txt") as all_depth:
+    with open("input_day1.txt", encoding="utf8") as all_depth:
         all_depth_int = [int(depth) for depth in all_depth if depth != "\n"]
 
     print("Day 01    :", day1.day1(all_depth_int))
@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     # Day 2 #################################################################
 
-    with open("input_day2.txt") as commands_file:
+    with open("input_day2.txt", encoding="utf8") as commands_file:
         raw_commands = [line.strip() for line in commands_file if line != "\n"]
 
     commands = [day2.CommandV1(line) for line in raw_commands]
@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     # Day 3 #################################################################
 
-    with open("input_day3.txt") as diagnostic_file:
+    with open("input_day3.txt", encoding="utf8") as diagnostic_file:
         raw_diagnostic = [line.strip() for line in diagnostic_file if line != "\n"]
 
     print("Day 03    :")
@@ -69,13 +69,13 @@ if __name__ == "__main__":
     )
     print(
         f"\tCO2 scrubber rating     : "
-        f"{diag_bis.CO2_scrubber_binary} -> {diag_bis.CO2_scrubber}"
+        f"{diag_bis.co2_scrubber_binary} -> {diag_bis.co2_scrubber}"
     )
     print(f"\tlife support            : {diag_bis.life_support()}")
 
     # Day 4 #################################################################
 
-    with open("input_day4.txt") as bingo_file:
+    with open("input_day4.txt", encoding="utf8") as bingo_file:
         raw_bingo = bingo_file.read()
 
     bingo = day4.day4(raw_bingo)
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     # Day 5 #################################################################
 
-    with open("input_day5.txt") as hydro_file:
+    with open("input_day5.txt", encoding="utf8") as hydro_file:
         raw_hydro = hydro_file.read()
 
     hydro_map = day5.day5(raw_hydro)

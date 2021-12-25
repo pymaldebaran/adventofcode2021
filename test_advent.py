@@ -1,3 +1,5 @@
+"""Test file for the whole Advent of Code 2021 session."""
+
 from assertpy import assert_that, soft_assertions
 from assertpy import add_extension as assertpy_add_extension
 import numpy as np
@@ -10,9 +12,12 @@ import day3
 import day4
 import day5
 
+# pylint: disable=missing-function-docstring
+# pylint: disable=redefined-outer-name
 
 @pytest.fixture
 def input_day1():
+    """Simple input for day 1."""
     return [199, 200, 208, 210, 200, 207, 240, 269, 260, 263]
 
 
@@ -85,8 +90,8 @@ def test_day3bis_on_simple_exemple(input_day3):
             assert_that(diagnostic)
             .has_oxygen_generator(23)
             .has_oxygen_generator_binary("10111")
-            .has_CO2_scrubber(10)
-            .has_CO2_scrubber_binary("01010")
+            .has_co2_scrubber(10)
+            .has_co2_scrubber_binary("01010")
             .has_life_support(230)
         )
 
