@@ -155,8 +155,9 @@ class Board:
 
     def do_we_have_a_winner(self) -> bool:
         """
-        Determine if we have a winning board. If any line or column if fully
-        marked the board is a won.
+        Determine if we have a winning board.
+
+        If any line or column if fully marked the board is a won.
 
         Example:
             >>> brd = Board.from_str('''1 2

@@ -288,9 +288,7 @@ class Segment:
                 )
             ]
 
-        raise ValueError(
-            f"{self!r} is neither vertical nor horizontal nor diagonal."
-        )
+        raise ValueError(f"{self!r} is neither vertical nor horizontal nor diagonal.")
 
 
 @dataclass

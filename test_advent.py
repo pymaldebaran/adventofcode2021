@@ -15,6 +15,7 @@ import day5
 # pylint: disable=missing-function-docstring
 # pylint: disable=redefined-outer-name
 
+
 @pytest.fixture
 def input_day1():
     """Simple input for day 1."""

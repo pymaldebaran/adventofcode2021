@@ -13,3 +13,8 @@ clean:
 # Display the first errors of pydocstrings
 checkdocstrings:
     pydocstyle -e 2> /dev/null | head
+
+# Simulate a pre-commit check on added files
+prepre:
+    git status
+    pre-commit run --all-files
