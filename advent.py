@@ -112,3 +112,8 @@ if __name__ == "__main__":
         population.evolve()
 
     print("Day 06    :", population.counter.total())
+
+    for _ in range(256 - 80):
+        population.evolve()
+
+    print("Day 06bis :", population.counter.total())

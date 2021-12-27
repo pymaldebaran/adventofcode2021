@@ -282,3 +282,14 @@ def test_day6_on_simple_example(input_day6, expected_counters):
             assert_that(population.counter.total()).is_equal_to(26)
 
     assert_that(population.counter.total()).is_equal_to(5934)
+
+
+def test_day6_on_simple_example(input_day6):
+    population = day6.day6(input_day6)
+
+    assert_that(population.counter).is_equal_to(raw_po_to_counter(input_day6))
+
+    for _ in range(256):
+        population.evolve()
+
+    assert_that(population.counter.total()).is_equal_to(26984457539)
