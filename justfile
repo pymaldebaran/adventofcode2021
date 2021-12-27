@@ -18,3 +18,7 @@ checkdocstrings:
 prepre:
     git status
     pre-commit run --all-files
+
+# Print the answers to the puzzles
+answer:
+    python advent.py

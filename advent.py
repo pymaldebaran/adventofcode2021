@@ -25,6 +25,7 @@ import day2
 import day3
 import day4
 import day5
+import day6
 
 
 if __name__ == "__main__":
@@ -43,12 +44,12 @@ if __name__ == "__main__":
     commands = [day2.CommandV1(line) for line in raw_commands]
 
     pos = day2.day2(commands)
-    print("Day 02    :", pos.h * pos.d)
+    print("Day 02    :", pos.horizontal * pos.depth)
 
     commands_bis = [day2.CommandV2(line) for line in raw_commands]
 
     pos_bis = day2.day2bis(commands_bis)
-    print("Day 02 bis:", pos_bis.h * pos_bis.d)
+    print("Day 02 bis:", pos_bis.horizontal * pos_bis.depth)
 
     # Day 3 #################################################################
 
@@ -99,3 +100,15 @@ if __name__ == "__main__":
 
     print("Day 05    :", hydro_map.nb_overlaps_hv())
     print("Day 05bis :", hydro_map.nb_overlaps_full())
+
+    # Day 6 #################################################################
+
+    with open("input_day6.txt", encoding="utf8") as lantern_population:
+        raw_population = lantern_population.read()
+
+    population = day6.day6(raw_population)
+
+    for _ in range(80):
+        population.evolve()
+
+    print("Day 06    :", population.counter.total())
